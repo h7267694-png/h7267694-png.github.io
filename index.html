@@ -138,7 +138,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
     <img id="logoTop" src="" alt="سالفورد">
     <div class="t">
       <h1>إصدار الفواتير</h1>
-      <p>سالفورد للأثاث والمفروشات — الضجيج، مجمع علي عبدالوهاب <span style="opacity:.45; font-size:11px">· نسخة 3</span></p>
+      <p>سالفورد للأثاث والمفروشات — الضجيج، مجمع علي عبدالوهاب <span style="opacity:.45; font-size:11px">· نسخة 4</span></p>
     </div>
     <div class="actions">
       <button class="btn btn-line btn-sm" onclick="openSettings()">⚙ الإعدادات</button>
@@ -184,6 +184,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
       <button class="type-btn" data-t="majlis" onclick="selType('majlis')"><span class="ic">🏛</span>مجلس ديكور</button>
       <button class="type-btn" data-t="sofa" onclick="selType('sofa')"><span class="ic">🛋️</span>كنب</button>
       <button class="type-btn" data-t="curtain" onclick="selType('curtain')"><span class="ic">🪟</span>ستائر</button>
+      <button class="type-btn" data-t="engrave" onclick="selType('engrave')"><span class="ic">🪵</span>نقشة حفر يدوي</button>
     </div>
 
     <!-- سجاد -->
@@ -257,6 +258,16 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
         <div class="field"><label>العرض (متر)</label><input type="number" step="0.01" min="0" id="ct_w"></div>
         <div class="field"><label>العدد</label><input type="number" step="1" min="1" value="1" id="ct_n" oninput="calc()"></div>
         <div class="field"><label>سعر القطعة (د.ك)</label><input type="number" step="0.001" min="0" id="ct_p" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <!-- نقشة حفر يدوي -->
+    <div class="tform" id="f-engrave">
+      <div class="grid">
+        <div class="field"><label>الطول (متر)</label><input type="number" step="0.01" min="0" id="e_h"></div>
+        <div class="field"><label>العرض (متر)</label><input type="number" step="0.01" min="0" id="e_w"></div>
+        <div class="field"><label>السعر (د.ك)</label><input type="number" step="0.001" min="0" id="e_total" oninput="calc()"></div>
+        <div class="field"><label>وصف إضافي</label><input id="e_d" placeholder="اختياري"></div>
       </div>
     </div>
 
@@ -370,7 +381,7 @@ document.getElementById('logoInv').src = LOGO;
 /* ---------- State ---------- */
 let items = [];
 let curType = null;
-const TYPE_NAMES = {carpet:'سجاد', cushion:'مساند', majlis:'مجلس ديكور', sofa:'كنب', curtain:'ستائر'};
+const TYPE_NAMES = {carpet:'سجاد', cushion:'مساند', majlis:'مجلس ديكور', sofa:'كنب', curtain:'ستائر', engrave:'نقشة حفر يدوي'};
 const fmt = n => (Math.round(n*1000)/1000).toFixed(3);
 
 /* ---------- Invoice number ---------- */
@@ -420,6 +431,7 @@ function itemTotal(){
     case 'majlis':  return num('mj_total');
     case 'sofa':    return num('s_total');
     case 'curtain': return num('ct_n') * num('ct_p');
+    case 'engrave': return num('e_total');
   }
   return 0;
 }
@@ -452,6 +464,11 @@ function itemDesc(){
     }
     case 'curtain':{
       return 'النوع: ' + segVal('ct_type') + ' | المقاس: ' + num('ct_h') + '×' + num('ct_w') + ' م | العدد: ' + num('ct_n') + ' × ' + fmt(num('ct_p')) + ' د.ك';
+    }
+    case 'engrave':{
+      let d = 'المقاس: ' + num('e_h') + '×' + num('e_w') + ' م';
+      if(txt('e_d')) d = txt('e_d') + ' | ' + d;
+      return d;
     }
   }
   return '';
