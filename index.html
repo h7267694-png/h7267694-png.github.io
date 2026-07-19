@@ -115,7 +115,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
 .stamp::before{content:""; position:absolute; inset:6px; border:1.5px solid rgba(169,133,60,.7); border-radius:50%}
 .stamp b{font-size:16px; font-weight:800}
 .stamp small{font-size:9.5px}
-.stamp .en{font-size:11px; font-weight:700; letter-spacing:2px}
+.stamp .en{font-size:11px; font-weight:700}
 
 @media (max-width:840px){
   #invoice{transform-origin:top right; transform:scale(.45); margin-bottom:-600px}
@@ -138,7 +138,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
     <img id="logoTop" src="" alt="سالفورد">
     <div class="t">
       <h1>إصدار الفواتير</h1>
-      <p>سالفورد للأثاث والمفروشات — الضجيج، مجمع علي عبدالوهاب</p>
+      <p>سالفورد للأثاث والمفروشات — الضجيج، مجمع علي عبدالوهاب <span style="opacity:.45; font-size:11px">· نسخة 3</span></p>
     </div>
     <div class="actions">
       <button class="btn btn-line btn-sm" onclick="openSettings()">⚙ الإعدادات</button>
@@ -524,7 +524,9 @@ async function downloadPDF(){
   const oldTransform = el.style.transform;
   el.style.transform = 'none';
   try{
-    const canvas = await html2canvas(el, {scale:2, useCORS:true, backgroundColor:'#ffffff'});
+    const canvas = await html2canvas(el, {scale:2, useCORS:true, backgroundColor:'#ffffff',
+      onclone: (doc)=>{ doc.querySelectorAll('#invoice, #invoice *').forEach(n=>{ n.style.letterSpacing='0'; n.style.fontVariantLigatures='normal'; }); }
+    });
     const img = canvas.toDataURL('image/jpeg', 0.93);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
