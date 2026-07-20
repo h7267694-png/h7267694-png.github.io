@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>سالفورد — إصدار الفواتير</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#22406B">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -138,9 +142,10 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
     <img id="logoTop" src="" alt="سالفورد">
     <div class="t">
       <h1>إصدار الفواتير</h1>
-      <p>سالفورد للأثاث والمفروشات — الضجيج، مجمع علي عبدالوهاب <span style="opacity:.45; font-size:11px">· نسخة 4</span></p>
+      <p>سالفورد للأثاث والمفروشات — الضجيج، مجمع علي عبدالوهاب <span style="opacity:.45; font-size:11px">· نسخة 7</span></p>
     </div>
     <div class="actions">
+      <button class="btn btn-line btn-sm" onclick="openArchive()">🗂 السجل</button>
       <button class="btn btn-line btn-sm" onclick="openSettings()">⚙ الإعدادات</button>
     </div>
   </div>
@@ -192,6 +197,8 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
       <div class="grid">
         <div class="field"><label>عدد الأمتار</label><input type="number" step="0.01" min="0" id="c_m" oninput="calc()"></div>
         <div class="field"><label>سعر المتر (د.ك)</label><input type="number" step="0.001" min="0" id="c_p" oninput="calc()"></div>
+        <div class="field"><label>التركيب (د.ك)</label><input type="number" step="0.001" min="0" id="c_inst" oninput="calc()" placeholder="اتركه فارغاً إن لم يوجد"></div>
+        <div class="field"><label>إسفنج لباد (د.ك)</label><input type="number" step="0.001" min="0" id="c_pad" oninput="calc()" placeholder="اتركه فارغاً إن لم يوجد"></div>
         <div class="field"><label>وصف / نوع السجاد</label><input id="c_d" placeholder="مثال: سجاد تركي — اختياري"></div>
       </div>
     </div>
@@ -258,6 +265,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
         <div class="field"><label>العرض (متر)</label><input type="number" step="0.01" min="0" id="ct_w"></div>
         <div class="field"><label>العدد</label><input type="number" step="1" min="1" value="1" id="ct_n" oninput="calc()"></div>
         <div class="field"><label>سعر القطعة (د.ك)</label><input type="number" step="0.001" min="0" id="ct_p" oninput="calc()"></div>
+        <div class="field"><label>التركيب (د.ك)</label><input type="number" step="0.001" min="0" id="ct_inst" oninput="calc()" placeholder="اتركه فارغاً إن لم يوجد"></div>
       </div>
     </div>
 
@@ -288,6 +296,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
     </div>
     <div class="totals">
       <div class="row">المجموع الفرعي: <span id="subTotal">0.000</span> د.ك</div>
+      <div class="row">أعمال إضافية: <input id="extraDesc" placeholder="وصف العمل" style="width:170px; padding:6px 8px; border:1.5px solid var(--line); border-radius:7px; font-family:inherit"> <input type="number" step="0.001" min="0" value="" id="extraPrice" placeholder="السعر" oninput="renderItems()"></div>
       <div class="row">خصم (د.ك): <input type="number" step="0.001" min="0" value="0" id="discount" oninput="renderItems()"></div>
       <div class="row grand">الإجمالي: <span id="grandTotal">0.000</span> د.ك</div>
     </div>
@@ -302,7 +311,20 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
   <div class="bar">
     <button class="btn btn-navy" onclick="preview()">👁 معاينة الفاتورة</button>
     <button class="btn btn-gold" onclick="downloadPDF()">⬇ تحميل PDF</button>
+    <button class="btn btn-gold" style="background:#1f7a4d" onclick="sharePDF()">📤 مشاركة واتساب</button>
     <button class="btn btn-line" onclick="newInvoice()">🗒 فاتورة جديدة</button>
+  </div>
+</div>
+
+<!-- Archive modal -->
+<div class="overlay" id="archiveOv">
+  <div class="modal" style="max-width:560px">
+    <h3>🗂 سجل الفواتير</h3>
+    <div class="field" style="margin-bottom:10px">
+      <input id="archSearch" placeholder="ابحث بالاسم أو رقم الفاتورة..." oninput="renderArchive()">
+    </div>
+    <div id="archList" style="max-height:55vh; overflow:auto"></div>
+    <button class="btn btn-line" style="width:100%; margin-top:14px" onclick="closeArchive()">إغلاق</button>
   </div>
 </div>
 
@@ -355,6 +377,7 @@ table.pitems tr:nth-child(even) td{background:#FAF7EF}
     </table>
     <div class="ptotals">
       <div class="r"><span>المجموع الفرعي</span><span id="pSub"></span></div>
+      <div class="r" id="pExtraRow"><span id="pExtraLabel">أعمال إضافية</span><span id="pExtra"></span></div>
       <div class="r" id="pDiscRow"><span>الخصم</span><span id="pDisc"></span></div>
       <div class="r g"><span>الإجمالي</span><span id="pGrand"></span></div>
     </div>
@@ -426,11 +449,11 @@ const txt = id => document.getElementById(id).value.trim();
 /* ---------- Per-item total ---------- */
 function itemTotal(){
   switch(curType){
-    case 'carpet':  return num('c_m') * num('c_p');
+    case 'carpet':  return num('c_m') * num('c_p') + num('c_inst') + num('c_pad');
     case 'cushion': return num('cu_m')*num('cu_p') + num('cu_mk')*num('cu_mkp');
     case 'majlis':  return num('mj_total');
     case 'sofa':    return num('s_total');
-    case 'curtain': return num('ct_n') * num('ct_p');
+    case 'curtain': return num('ct_n') * num('ct_p') + num('ct_inst');
     case 'engrave': return num('e_total');
   }
   return 0;
@@ -443,6 +466,8 @@ function itemDesc(){
     case 'carpet':{
       let d = num('c_m') + ' متر × ' + fmt(num('c_p')) + ' د.ك للمتر';
       if(txt('c_d')) d = txt('c_d') + ' — ' + d;
+      if(num('c_inst')) d += ' | تركيب: ' + fmt(num('c_inst')) + ' د.ك';
+      if(num('c_pad')) d += ' | إسفنج لباد: ' + fmt(num('c_pad')) + ' د.ك';
       return d;
     }
     case 'cushion':{
@@ -463,7 +488,9 @@ function itemDesc(){
       return parts.join(' | ');
     }
     case 'curtain':{
-      return 'النوع: ' + segVal('ct_type') + ' | المقاس: ' + num('ct_h') + '×' + num('ct_w') + ' م | العدد: ' + num('ct_n') + ' × ' + fmt(num('ct_p')) + ' د.ك';
+      let d = 'النوع: ' + segVal('ct_type') + ' | المقاس: ' + num('ct_h') + '×' + num('ct_w') + ' م | العدد: ' + num('ct_n') + ' × ' + fmt(num('ct_p')) + ' د.ك';
+      if(num('ct_inst')) d += ' | تركيب: ' + fmt(num('ct_inst')) + ' د.ك';
+      return d;
     }
     case 'engrave':{
       let d = 'المقاس: ' + num('e_h') + '×' + num('e_w') + ' م';
@@ -496,9 +523,10 @@ function renderItems(){
     ).join('');
   }
   const sub = items.reduce((s,it)=>s+it.total,0);
+  const extra = parseFloat(document.getElementById('extraPrice').value)||0;
   const disc = parseFloat(document.getElementById('discount').value)||0;
   document.getElementById('subTotal').textContent = fmt(sub);
-  document.getElementById('grandTotal').textContent = fmt(Math.max(0, sub-disc));
+  document.getElementById('grandTotal').textContent = fmt(Math.max(0, sub+extra-disc));
 }
 
 /* ---------- Preview / PDF ---------- */
@@ -518,11 +546,16 @@ function buildInvoice(){
     ? items.map(it=>'<tr><td style="font-weight:700">'+it.name+'</td><td>'+it.desc+'</td><td style="text-align:center; font-weight:700">'+fmt(it.total)+'</td></tr>').join('')
     : '<tr><td colspan="3" style="text-align:center; color:#999">لا توجد بنود</td></tr>';
   const sub = items.reduce((s,it)=>s+it.total,0);
+  const extra = parseFloat(document.getElementById('extraPrice').value)||0;
+  const extraDesc = txt('extraDesc');
   const disc = parseFloat(document.getElementById('discount').value)||0;
   document.getElementById('pSub').textContent = fmt(sub) + ' د.ك';
+  document.getElementById('pExtraRow').style.display = extra>0 ? 'flex' : 'none';
+  document.getElementById('pExtraLabel').textContent = extraDesc || 'أعمال إضافية';
+  document.getElementById('pExtra').textContent = fmt(extra) + ' د.ك';
   document.getElementById('pDiscRow').style.display = disc>0 ? 'flex' : 'none';
   document.getElementById('pDisc').textContent = fmt(disc) + ' د.ك';
-  document.getElementById('pGrand').textContent = fmt(Math.max(0,sub-disc)) + ' د.ك';
+  document.getElementById('pGrand').textContent = fmt(Math.max(0,sub+extra-disc)) + ' د.ك';
   const n = txt('notes');
   const pn = document.getElementById('pNotes');
   pn.style.display = n ? 'block' : 'none';
@@ -531,8 +564,7 @@ function buildInvoice(){
 function preview(){ buildInvoice(); document.getElementById('invWrap').classList.add('show'); }
 function closePreview(){ document.getElementById('invWrap').classList.remove('show'); }
 
-async function downloadPDF(){
-  if(!items.length && !confirm('الفاتورة بدون بنود — متابعة؟')) return;
+async function makePdf(){
   buildInvoice();
   const wrap = document.getElementById('invWrap');
   const wasOpen = wrap.classList.contains('show');
@@ -549,18 +581,55 @@ async function downloadPDF(){
     const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
     const w = 210, h = canvas.height * w / canvas.width;
     pdf.addImage(img, 'JPEG', 0, 0, w, Math.min(h, 297));
-    const no = (document.getElementById('invNo').value || invNoStr()).replace('/','-');
-    pdf.save('فاتورة-سالفورد-' + no + '.pdf');
-    // increment counter only if the printed number matches the stored one
-    if(document.getElementById('invNo').value === invNoStr()){
-      setCounter(getCounter()+1);
-    }
-  }catch(e){
-    alert('تعذر إنشاء PDF — يمكنك استخدام طباعة المتصفح (حفظ كـ PDF) بدلاً منه.');
-    window.print();
+    const no = document.getElementById('invNo').value || invNoStr();
+    return {pdf, no, filename:'فاتورة-سالفورد-' + no.replace('/','-') + '.pdf'};
   }finally{
     el.style.transform = oldTransform;
     if(!wasOpen) wrap.classList.remove('show');
+  }
+}
+function afterIssue(no){
+  saveToArchive(no);
+  const m = no.match(/(\d+)\s*$/);
+  const next = m ? parseInt(m[1],10) + 1 : getCounter() + 1;
+  setCounter(Math.max(getCounter(), next));
+  refreshInvNo();
+}
+async function downloadPDF(){
+  if(!items.length && !confirm('الفاتورة بدون بنود — متابعة؟')) return;
+  try{
+    const {pdf, no, filename} = await makePdf();
+    pdf.save(filename);
+    afterIssue(no);
+  }catch(e){
+    alert('تعذر إنشاء PDF — يمكنك استخدام طباعة المتصفح (حفظ كـ PDF) بدلاً منه.');
+    window.print();
+  }
+}
+function cleanPhone(p){
+  p = (p||'').replace(/\D/g,'');
+  if(p.length === 8) p = '965' + p;
+  return p;
+}
+async function sharePDF(){
+  if(!items.length && !confirm('الفاتورة بدون بنود — متابعة؟')) return;
+  try{
+    const {pdf, no, filename} = await makePdf();
+    const blob = pdf.output('blob');
+    const file = new File([blob], filename, {type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'فاتورة سالفورد', text:'فاتورة رقم ' + no + ' — سالفورد للأثاث والمفروشات'});
+      afterIssue(no);
+    }else{
+      pdf.save(filename);
+      afterIssue(no);
+      const ph = cleanPhone(txt('custPhone'));
+      if(ph) window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent('فاتورتكم رقم ' + no + ' من سالفورد للأثاث والمفروشات'));
+      alert('المشاركة المباشرة غير مدعومة في هذا المتصفح — تم تحميل الملف، أرفقه في واتساب من التنزيلات.');
+    }
+  }catch(e){
+    if(e && e.name === 'AbortError') return; // المستخدم ألغى المشاركة
+    alert('تعذرت المشاركة — جرب زر تحميل PDF.');
   }
 }
 
@@ -572,10 +641,97 @@ function newInvoice(){
   document.getElementById('custPhone').value = '';
   document.getElementById('notes').value = '';
   document.getElementById('discount').value = 0;
+  document.getElementById('extraDesc').value = '';
+  document.getElementById('extraPrice').value = '';
   document.querySelectorAll('.tform input').forEach(i=>{ if(i.id!=='ct_n') i.value=''; });
   refreshInvNo();
   setToday();
+  localStorage.removeItem('salford_draft');
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- Archive ---------- */
+function getArchive(){
+  try{ const a = JSON.parse(localStorage.getItem('salford_archive')); if(Array.isArray(a)) return a; }catch(e){}
+  return [];
+}
+function setArchive(a){ localStorage.setItem('salford_archive', JSON.stringify(a)); }
+function snapshot(no){
+  return {
+    no,
+    date: document.getElementById('invDate').value,
+    cust: txt('custName'), custPhone: txt('custPhone'), coPhone: txt('coPhone'),
+    items: JSON.parse(JSON.stringify(items)),
+    extraDesc: txt('extraDesc'), extraPrice: document.getElementById('extraPrice').value,
+    discount: document.getElementById('discount').value,
+    notes: txt('notes'),
+    grand: document.getElementById('grandTotal').textContent,
+    ts: Date.now()
+  };
+}
+function saveToArchive(no){
+  const a = getArchive();
+  const i = a.findIndex(r=>r.no===no);
+  const rec = snapshot(no);
+  if(i>=0) a[i] = rec; else a.unshift(rec);
+  setArchive(a.slice(0,300));
+}
+function openArchive(){ renderArchive(); document.getElementById('archiveOv').classList.add('show'); }
+function closeArchive(){ document.getElementById('archiveOv').classList.remove('show'); }
+function renderArchive(){
+  const q = (document.getElementById('archSearch').value||'').trim();
+  const a = getArchive().filter(r => !q || r.no.includes(q) || (r.cust||'').includes(q));
+  document.getElementById('archList').innerHTML = a.length
+    ? a.map(r=>
+      '<div class="rep-row"><div style="flex:1"><b>'+r.no+'</b> — '+(r.cust||'بدون اسم')+
+      '<br><small style="color:#8a8064">'+(r.date? r.date.split('-').reverse().join('/') : '')+' &nbsp;·&nbsp; '+r.grand+' د.ك &nbsp;·&nbsp; '+r.items.length+' بند</small></div>'+
+      '<button class="btn btn-gold btn-sm" onclick="loadRecord(\''+r.no+'\')">فتح</button>'+
+      '<button class="btn-danger" onclick="delRecord(\''+r.no+'\')" title="حذف">🗑</button></div>'
+    ).join('')
+    : '<div class="hint" style="padding:14px; text-align:center">'+(q? 'لا نتائج للبحث' : 'لا توجد فواتير محفوظة بعد — تُحفظ تلقائياً عند كل إصدار')+'</div>';
+}
+function loadRecord(no){
+  const r = getArchive().find(x=>x.no===no);
+  if(!r) return;
+  items = JSON.parse(JSON.stringify(r.items||[]));
+  document.getElementById('invNo').value = r.no;
+  if(r.date) document.getElementById('invDate').value = r.date;
+  document.getElementById('custName').value = r.cust||'';
+  document.getElementById('custPhone').value = r.custPhone||'';
+  document.getElementById('coPhone').value = r.coPhone||'';
+  document.getElementById('extraDesc').value = r.extraDesc||'';
+  document.getElementById('extraPrice').value = r.extraPrice||'';
+  document.getElementById('discount').value = r.discount||0;
+  document.getElementById('notes').value = r.notes||'';
+  renderItems();
+  closeArchive();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function delRecord(no){
+  if(!confirm('حذف الفاتورة '+no+' من السجل؟')) return;
+  setArchive(getArchive().filter(r=>r.no!==no));
+  renderArchive();
+}
+
+/* ---------- Draft autosave ---------- */
+function saveDraft(){
+  try{ localStorage.setItem('salford_draft', JSON.stringify(snapshot(''))); }catch(e){}
+}
+function restoreDraft(){
+  try{
+    const d = JSON.parse(localStorage.getItem('salford_draft'));
+    if(!d) return;
+    if(!(d.items && d.items.length) && !d.cust && !d.notes && !d.custPhone) return;
+    items = d.items||[];
+    document.getElementById('custName').value = d.cust||'';
+    document.getElementById('custPhone').value = d.custPhone||'';
+    document.getElementById('coPhone').value = d.coPhone||'';
+    document.getElementById('extraDesc').value = d.extraDesc||'';
+    document.getElementById('extraPrice').value = d.extraPrice||'';
+    document.getElementById('discount').value = d.discount||0;
+    document.getElementById('notes').value = d.notes||'';
+    if(d.date) document.getElementById('invDate').value = d.date;
+  }catch(e){}
 }
 
 /* ---------- Settings ---------- */
@@ -611,8 +767,9 @@ function setToday(){
 renderPhonesDatalist();
 refreshInvNo();
 setToday();
+restoreDraft();
 renderItems();
+setInterval(saveDraft, 2000);
 </script>
 </body>
 </html>
-
